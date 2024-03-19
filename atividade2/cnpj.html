@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cliente ReceitaWS</title>
+</head>
+
+<body>
+    <h1>Cliente ReceitaWS</h1>
+
+    <form id="consultaForm">
+        <label for="cnpj">CNPJ:</label>
+        <input type="text" id="cnpj" name="cnpj" required>
+        <button type="button" id="pesquisar">Pesquisar</button>
+    </form>
+
+
+    <div id="resultado"></div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('consultaForm');
+            const resultadoDiv = document.getElementById('resultado');
+            const pesquisarBtn = document.getElementById('pesquisar');
+
+            pesquisarBtn.addEventListener('click', function () {
+                const cnpj = form.cnpj.value.trim();
+                if (!cnpj) {
+                    resultadoDiv.innerHTML = 'Por favor, insira um CNPJ válido.';
+                    return;
+                }
+                resultadoDiv.innerHTML = 'Pesquisando...';
+
+                consultarReceitaWS(cnpj);
+            });
+        });
+
+        function consultarReceitaWS(cnpj) {
+            const resultadoDiv = document.getElementById('resultado');
+
+            // Limpa o resultado anterior
+            resultadoDiv.innerHTML = 'Pesquisando...';
+
+            fetch(`https://cors-anywhere.herokuapp.com/https://receitaws.com.br/v1/cnpj/${cnpj}?cnpj=${cnpj}`)
+                .then(response => response.json())
+                .then(data => {
+
+                    resultadoDiv.innerHTML = `
+                <h2>Resultado:</h2>
+                <p>Razão Social: ${data.razaoSocial}</p>
+                <p>Endereço: ${data.endereco.logradouro}, ${data.endereco.bairro}, ${data.endereco.cidade} - ${data.endereco.uf}</p>`;
+
+                    const inputCnpj = document.getElementById('cnpj');
+                    inputCnpj.value = `${data.endereco.logradouro}, ${data.endereco.bairro}, ${data.endereco.cidade} - ${data.endereco.uf}`;
+                })
+                .catch(error => {
+                    resultadoDiv.innerHTML = 'Erro ao consultar o CNPJ. Por favor, tente novamente mais tarde.';
+                    console.error('Erro:', error);
+                });
+        }
+    </script>
+</body>
+
+</html>
